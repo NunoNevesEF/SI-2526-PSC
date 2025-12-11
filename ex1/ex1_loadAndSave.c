@@ -79,7 +79,10 @@ void table_save_csv(const struct table *table, const char *filename);*/
 void table_save_csv(const struct table *table, const char *filename)
 {
     FILE *fptr;
-    fptr = fopen(filename, "w");
+    char fileLocation[256] = "generatedFiles/";
+    strcat(fileLocation, filename);
+
+    fptr = fopen(fileLocation, "w");
 
     for (int i = 0; i < table->nCols; i++)
     {
@@ -117,9 +120,11 @@ int main(int argc, char *argv[])
         printf("Wrong number of arguments, please try again...\n");
         return 1;
     }
+
     char *inFile = argv[1];
     char *outFile = argv[2];
 
     testing_load_and_save_csv(inFile, outFile);
+
     return 0;
 };
