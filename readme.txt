@@ -9,14 +9,14 @@ sudo apt install build-essential	// Make & gcc
 gcc -g ex1.c -o ex1
 make
 ./ex1_filter caminho-anterior/SI-2526-PSC/files/frutas.csv filter_table_testing
+./ex1_loadAndSave caminho-anterior/SI-2526-PSC/files/frutas.csv load_and_save_testing
+
 
 -----		TodoList		-----	
 
-1.e) & 1.f) should be easy to implement
-Search how to set up d) and f) with a Makefile
-
-2) Check dropbox from moodle and search for examples, you can also check https://github.com/NunoNevesEF/Project-C-Assembly for examples.
-This one is more about searching the correct approach, examples from classes are always preffered.
+Review ex1 and ex2, check if there are better options like defining structure, Makefile...
+Start implementation of exercise 3, structure in this exercise is important, you can follow the example from https://github.com/NunoNevesEF/Project-C-Assembly
+but it's not optimized. Prepare structure of adding commands for the exercise 4.
 
 -----		DueDate 		-----	
 
