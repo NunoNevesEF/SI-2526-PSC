@@ -5,13 +5,17 @@ sudo apt update
 sudo apt install libcsv-dev
 sudo apt install valgrind
 sudo apt install build-essential	// Make & gcc
+
 gcc -g ex1.c -o ex1
+./ex1 /mnt/c/Users/nunon/Desktop/ISEL/SI-2526-PSC/files/frutas.csv testing_table_save_csv_frutas
 
 -----		TodoList		-----	
 
-1. b) should be completed, check if it can be optimized or maybe change the struct
-1. c) should be easy to do now
-1. d) testing program should be easy to do aswell
+1.e) & 1.f) should be easy to implement
+Search how to set up d) and f) with a Makefile
+
+2) Check dropbox from moodle and search for examples, you can also check https://github.com/NunoNevesEF/Project-C-Assembly for examples.
+This one is more about searching the correct approach, examples from classes are always preffered.
 
 -----		DueDate 		-----	
 
