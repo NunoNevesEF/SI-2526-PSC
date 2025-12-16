@@ -14,9 +14,9 @@ make
 
 ----------		TodoList		----------
 
-Review ex1 and ex2, check if there are better options like defining structure, Makefile...
-Start implementation of exercise 3, structure in this exercise is important, you can follow the example from https://github.com/NunoNevesEF/Project-C-Assembly
-but it's not optimized. Prepare structure of adding commands for the exercise 4.
+Started implementation of exercise 3 in branch dev-zeta, missing show and filter operation implementation.
+Also need to check clean method in order to clean the structure properly. Structure until now should be 
+acceptable in order to implement exercise 4.
 
 ----------		DueDate 		----------
 
