@@ -71,7 +71,6 @@ void handle_save(char *args[])
     table_save_csv(current_table, args[1]);
 }
 
-// TODO()
 void handle_show(char *args[])
 {
     if (args[1] == NULL)
@@ -79,14 +78,28 @@ void handle_show(char *args[])
         printf("Wrong format, please try again: show <col><row>:<col><row>\n");
         return;
     }
+
+    char initialColumn = args[1][0];
+    char initialRow = args[1][1];
+    char lastColumn = args[1][3];
+    char lastRow = args[1][4];
+
+    show_sub_table(initialColumn, initialRow, lastColumn, lastRow);
 }
 
-// TODO()
 void handle_filter(char *args[])
 {
     if (args[1] == NULL || args[2] == NULL)
     {
-        printf("Wrong format, please try again: filter <filename><data>\n");
+        printf("Wrong format, please try again: filter <column> <data>\n");
         return;
     }
+
+    const char *filter_args[2];
+    filter_args[0] = args[1];
+    filter_args[1] = args[2];
+
+    struct table *new_table = table_filter(current_table, filter_data_from_column, filter_args);
+
+    current_table = new_table;
 }

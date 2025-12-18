@@ -24,5 +24,7 @@ extern struct table *current_table;
 struct table *table_load_csv(const char *filename);
 void table_save_csv(const struct table *table, const char *filename);
 struct table *table_filter(const struct table *table, bool (*predicate)(const void *row, const void *context), const void *context);
+bool filter_data_from_column(const void *row, const void *context);
+void show_sub_table(char initialColumn, char initialRow, char lastColumn, char lastRow);
 
 #endif

@@ -165,3 +165,47 @@ bool price_lower_than_euro(const void *row, const void *context)
 
     return price < limit;
 }
+
+bool filter_data_from_column(const void *row, const void *context)
+{
+    char **linha = (char **)row;
+    const char **ctx = (const char **)context;
+    const char *column_name = ctx[0];
+    const char *value = ctx[1];
+
+    int col_index = -1;
+    for (int i = 0; i < current_table->nCols; i++)
+    {
+        if (strcmp(current_table->columns[i], column_name) == 0)
+        {
+            col_index = i;
+            break;
+        }
+    }
+
+    if (col_index == -1)
+        return false; // columns does not exist
+
+    return strcmp(linha[col_index], value) == 0;
+}
+
+void show_sub_table(char initialColumn, char initialRow, char lastColumn, char lastRow)
+{
+    int initialCol = initialColumn - 'A';
+    int lastCol = lastColumn - 'A';
+    int iRow = initialRow - '1';
+    int lRow = lastRow - '1';
+
+    for (int c = initialCol; c <= lastCol; c++)
+    {
+        printf("%s\t", current_table->columns[c]);
+    }
+    printf("\n");
+
+    for (int r = iRow; r <= lRow; r++)
+    {
+        for (int c = initialCol; c <= lastCol; c++)
+            printf("%s\t", current_table->rows[r][c]);
+        printf("\n");
+    }
+}
