@@ -14,9 +14,14 @@ make
 
 ----------		TodoList		----------
 
-Started implementation of exercise 3 in branch dev-zeta, missing show and filter operation implementation.
-Also need to check clean method in order to clean the structure properly. Structure until now should be 
-acceptable in order to implement exercise 4.
+Implement correctly cleanTable in comandos.c in ex3 and ex4
+Implement ex4 with a shared object
+
+Code Review :
+
+Check table_load_csv and table_save_csv, specially the libcsv operations
+Check ways to optimize and simplify code, specially in table.c
+Check makefile
 
 ----------		DueDate 		----------
 
