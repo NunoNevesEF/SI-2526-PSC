@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <csv.h>
 
-struct table *table_load_csv(const char *filename)
+/*
+struct table *table_load_csv_legacy(const char *filename)
 {
     FILE *stream = fopen(filename, "r");
     struct table *t = malloc(sizeof(struct table));
@@ -50,30 +52,122 @@ struct table *table_load_csv(const char *filename)
 
     return t;
 }
+*/
+
+static struct table *t = NULL;
+
+/**
+ * cb1
+ */
+void on_field(void *s, size_t len, void *data)
+{
+    char *field = strndup(s, len);
+
+    if (!t->state.cols_done)
+    {
+        t->columns = realloc(
+            t->columns,
+            (t->nCols + 1) * sizeof(char *));
+        t->columns[t->nCols++] = field;
+    }
+    else
+    {
+        t->state.current_row[t->state.current_col++] = field;
+    }
+}
+
+/**
+ * cb2
+ */
+void on_row(int c, void *data)
+{
+    if (!t->state.cols_done)
+    {
+        t->state.cols_done = true;
+        t->state.current_row = malloc(t->nCols * sizeof(char *));
+        t->state.current_col = 0;
+        return;
+    }
+
+    t->rows = realloc(t->rows, (t->nRows + 1) * sizeof(char **));
+    t->rows[t->nRows++] = t->state.current_row;
+
+    t->state.current_row = malloc(t->nCols * sizeof(char *));
+    t->state.current_col = 0;
+}
+
+struct table *table_load_csv(const char *filename)
+{
+    struct csv_parser p;
+    t = malloc(sizeof(struct table));
+
+    // Data
+    t->nCols = 0;
+    t->nRows = 0;
+    t->columns = NULL;
+    t->rows = NULL;
+
+    // State
+    t->state.cols_done = false;
+    t->state.current_row = NULL;
+    t->state.current_col = 0;
+
+    csv_init(&p, 0);
+
+    FILE *fp = fopen(filename, "r");
+    char buf[1024];
+    size_t n;
+
+    while ((n = fread(buf, 1, sizeof(buf), fp)) > 0)
+    {
+        if (csv_parse(&p, buf, n, on_field, on_row, NULL) != n)
+        {
+            fprintf(stderr, "CSV error: %s\n",
+                    csv_strerror(csv_error(&p)));
+            break;
+        }
+    }
+
+    csv_fini(&p, NULL, NULL, NULL);
+    csv_free(&p);
+    fclose(fp);
+
+    return t;
+}
+
+void cb1(void *s, size_t i, void *outfile)
+{
+    fwrite(s, 1, i, (FILE *)outfile);
+    fputc(',', (FILE *)outfile);
+}
+
+void cb2(int c, void *outfile)
+{
+    FILE *f = (FILE *)outfile;
+    fseek(f, -1, SEEK_CUR); // Corrects the last comma
+    fputc('\n', f);
+}
 
 void table_save_csv(const struct table *table, const char *filename)
 {
-    FILE *fptr;
     char fileLocation[256] = "generatedFiles/";
     strcat(fileLocation, filename);
+    FILE *fptr = fopen(fileLocation, "w");
 
-    fptr = fopen(fileLocation, "w");
-
-    for (int i = 0; i < table->nCols; i++)
+    for (int c = 0; c < table->nCols; c++)
     {
-        fprintf(fptr, "%s", table->columns[i]);
-        if (i < table->nCols - 1)
-            fprintf(fptr, ",");
+        cb1(table->columns[c], strlen(table->columns[c]), fptr);
     }
 
-    for (int j = 0; j < table->nRows; j++)
+    cb2(0, fptr);
+
+    for (int r = 0; r < table->nRows; r++)
     {
-        for (int k = 0; k < table->nCols; k++)
+        for (int c = 0; c < table->nCols; c++)
         {
-            fprintf(fptr, "%s", table->rows[j][k]);
-            if (k < table->nCols - 1)
-                fprintf(fptr, ",");
+            cb1(table->rows[r][c], strlen(table->rows[r][c]), fptr);
         }
+        cb2(0, fptr);
     }
 
     fclose(fptr);

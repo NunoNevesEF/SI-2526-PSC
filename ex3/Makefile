@@ -4,7 +4,7 @@ CFLAGS = -Wall -Wextra -g
 all: main
 
 main: main.o table.o comandos.o
-	$(CC) $(CFLAGS) -o main main.o table.o comandos.o
+	$(CC) $(CFLAGS) -o main main.o table.o comandos.o -lcsv
 
 main.o: main.c table.h comandos.h
 	$(CC) $(CFLAGS) -c main.c

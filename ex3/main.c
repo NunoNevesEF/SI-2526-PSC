@@ -5,8 +5,6 @@
 #include "table.h"
 #include "comandos.h"
 
-struct table *current_table = NULL;
-
 int getcommand(char input[], char *commandargs[], size_t max_size)
 {
     if (fgets(input, 100, stdin) == NULL)

@@ -4,8 +4,6 @@
 #include "comandos.h"
 #include "table.h"
 
-extern struct table *current_table;
-
 struct command commands[] = {
     {"help", handle_help},
     {"exit", handle_exit},
