@@ -15,10 +15,11 @@ make
 ----------		TodoList		----------
 CODE_REVIEW UNTIL 22/12 :
 
+- Fix the main.c [execComand] function in order to search in the commandArray, remove the if's
+- Fix commandos.c [cleanTable] function in order to sucessfully clean memory allocated 
 - Check table_save_csv, currente implementation is using fputc (using the csv lib with write_csv would be BiS)
 - Check ways to optimize and simplify code, specially in table.c due to libcsv functions
 - Check if it is required to pass parameters into the libfile.so ( would be easy to achieve this if the user pass the row they wanna delete in the command )
-- Optimize the main.c [execComand] function in order to search in the commandArray, remove the if's
 
 ----------		DueDate 		----------
 
