@@ -13,15 +13,12 @@ make
 
 
 ----------		TodoList		----------
+CODE_REVIEW UNTIL 22/12 :
 
-Implement correctly cleanTable in comandos.c in ex3 and ex4
-Implement ex4 with a shared object
-
-Code Review :
-
-Check table_load_csv and table_save_csv, specially the libcsv operations
-Check ways to optimize and simplify code, specially in table.c
-Check makefile
+- Check table_save_csv, currente implementation is using fputc (using the csv lib with write_csv would be BiS)
+- Check ways to optimize and simplify code, specially in table.c due to libcsv functions
+- Check if it is required to pass parameters into the libfile.so ( would be easy to achieve this if the user pass the row they wanna delete in the command )
+- Optimize the main.c [execComand] function in order to search in the commandArray, remove the if's
 
 ----------		DueDate 		----------
 
