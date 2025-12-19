@@ -13,6 +13,7 @@ make
 
 
 ----------		TodoList		----------
+
 CODE_REVIEW UNTIL 22/12 :
 
 - Fix the main.c [execComand] function in order to search in the commandArray, remove the if's
