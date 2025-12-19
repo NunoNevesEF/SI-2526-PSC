@@ -108,9 +108,9 @@ void handle_filter(char *args[])
 
 void common_handler(char *commandargs[])
 {
-    if (commandargs[1] == NULL)
+    if (commandargs[1] == NULL || commandargs[2] == NULL)
     {
-        printf("Wrong format, please try again: command <libfile.so>\n");
+        printf("Wrong format, please try again: command <libfile.so> <function>\n");
         return;
     }
 
@@ -122,7 +122,7 @@ void common_handler(char *commandargs[])
     }
 
     void (*f)(char *args[]);
-    f = (void (*)(char *[]))dlsym(handle, "handle_remove_first");
+    f = (void (*)(char *[]))dlsym(handle, commandargs[2]);
 
     if (!f)
     {
