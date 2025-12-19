@@ -48,6 +48,10 @@ void execComand(char *commandargs[])
     {
         handle_filter(commandargs);
     }
+    else if (strcmp(commandargs[0], "command") == 0)
+    {
+        common_handler(commandargs);
+    }
     else
     {
         printf("No such command exists, please try again.\n");

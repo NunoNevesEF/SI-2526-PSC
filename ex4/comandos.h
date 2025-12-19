@@ -15,5 +15,6 @@ void handle_load(char *args[]);
 void handle_save(char *args[]);
 void handle_show(char *args[]);
 void handle_filter(char *args[]);
+void common_handler(char *commandargs[]);
 
 #endif

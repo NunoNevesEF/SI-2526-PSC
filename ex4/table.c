@@ -85,6 +85,7 @@ struct table *table_load_csv(const char *filename)
     return current_table;
 }
 
+/*
 void cb1(void *s, size_t i, void *outfile)
 {
     fwrite(s, 1, i, (FILE *)outfile);
@@ -118,6 +119,66 @@ void table_save_csv(const struct table *table, const char *filename)
             cb1(table->rows[r][c], strlen(table->rows[r][c]), fptr);
         }
         cb2(0, fptr);
+    }
+
+    fclose(fptr);
+}*/
+
+// COM FPUTC
+
+static void write_csv_field(FILE *f, const char *s)
+{
+    if (!s)
+        s = "";
+    bool need_quote = strchr(s, ',') || strchr(s, '\n') || strchr(s, '"');
+
+    if (need_quote)
+        fputc('"', f);
+
+    for (const unsigned char *p = (const unsigned char *)s; *p; ++p)
+    {
+        if (*p == '"')
+        {
+            fputc('"', f);
+            fputc('"', f);
+        }
+        else
+        {
+            fputc(*p, f);
+        }
+    }
+
+    if (need_quote)
+        fputc('"', f);
+}
+
+void table_save_csv(const struct table *table, const char *filename)
+{
+    char fileLocation[256] = "generatedFiles/";
+    strncat(fileLocation, filename, sizeof(fileLocation) - strlen(fileLocation) - 1);
+    FILE *fptr = fopen(fileLocation, "w");
+    if (!fptr)
+        return;
+
+    // cabeçalho
+    for (int c = 0; c < table->nCols; c++)
+    {
+        write_csv_field(fptr, table->columns[c]);
+        if (c + 1 < table->nCols)
+            fputc(',', fptr);
+    }
+    fputc('\n', fptr);
+
+    // linhas
+    for (int r = 0; r < table->nRows; r++)
+    {
+        for (int c = 0; c < table->nCols; c++)
+        {
+            write_csv_field(fptr, table->rows[r][c]);
+            if (c + 1 < table->nCols)
+                fputc(',', fptr);
+        }
+        fputc('\n', fptr);
     }
 
     fclose(fptr);

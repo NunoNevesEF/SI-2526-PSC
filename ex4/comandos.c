@@ -3,6 +3,7 @@
 #include <string.h>
 #include "comandos.h"
 #include "table.h"
+#include <dlfcn.h>
 
 struct command commands[] = {
     {"help", handle_help},
@@ -10,7 +11,8 @@ struct command commands[] = {
     {"load", handle_load},
     {"save", handle_save},
     {"show", handle_show},
-    {"filter", handle_filter}};
+    {"filter", handle_filter},
+    {"command", common_handler}};
 
 const int n_commands = sizeof(commands) / sizeof(commands[0]);
 
@@ -102,4 +104,33 @@ void handle_filter(char *args[])
     struct table *new_table = table_filter(current_table, filter_data_from_column, filter_args);
 
     current_table = new_table;
+}
+
+void common_handler(char *commandargs[])
+{
+    if (commandargs[1] == NULL)
+    {
+        printf("Wrong format, please try again: command <libfile.so>\n");
+        return;
+    }
+
+    void *handle = dlopen(commandargs[1], RTLD_LAZY);
+    if (!handle)
+    {
+        fprintf(stderr, "dlopen error: %s\n", dlerror());
+        return;
+    }
+
+    void (*f)(char *args[]);
+    f = (void (*)(char *[]))dlsym(handle, "handle_remove_first");
+
+    if (!f)
+    {
+        fprintf(stderr, "dlsym error: %s\n", dlerror());
+        dlclose(handle);
+        return;
+    }
+
+    f(NULL);
+    dlclose(handle);
 }
