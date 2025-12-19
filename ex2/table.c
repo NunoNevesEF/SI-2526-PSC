@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <csv.h>
+#include <stdbool.h>
+
 
 /*
 struct table *table_load_csv_legacy(const char *filename)
@@ -98,6 +100,7 @@ void on_row(int c, void *data)
 
 struct table *table_load_csv(const char *filename)
 {
+
     struct csv_parser p;
     t = malloc(sizeof(struct table));
 
@@ -135,6 +138,11 @@ struct table *table_load_csv(const char *filename)
     return t;
 }
 
+
+
+/*
+// 1a VERSÃO (COM CB1 E CB2)
+
 void cb1(void *s, size_t i, void *outfile)
 {
     fwrite(s, 1, i, (FILE *)outfile);
@@ -148,8 +156,10 @@ void cb2(int c, void *outfile)
     fputc('\n', f);
 }
 
+
 void table_save_csv(const struct table *table, const char *filename)
 {
+
     char fileLocation[256] = "generatedFiles/";
     strcat(fileLocation, filename);
     FILE *fptr = fopen(fileLocation, "w");
@@ -171,7 +181,107 @@ void table_save_csv(const struct table *table, const char *filename)
     }
 
     fclose(fptr);
+}*/
+
+
+//COM FPUTC
+
+static void write_csv_field(FILE *f, const char *s)
+{
+    if (!s) s = "";
+    bool need_quote = strchr(s, ',') || strchr(s, '\n') || strchr(s, '"');
+
+    if (need_quote) fputc('"', f);
+
+    for (const unsigned char *p = (const unsigned char *)s; *p; ++p)
+    {
+        if (*p == '"')
+        {
+            fputc('"', f);
+            fputc('"', f);
+        }
+        else
+        {
+            fputc(*p, f);
+        }
+    }
+
+    if (need_quote) fputc('"', f);
 }
+
+void table_save_csv(const struct table *table, const char *filename)
+{
+    char fileLocation[256] = "generatedFiles/";
+    strncat(fileLocation, filename, sizeof(fileLocation) - strlen(fileLocation) - 1);
+    FILE *fptr = fopen(fileLocation, "w");
+    if (!fptr) return;
+
+    // cabeçalho
+    for (int c = 0; c < table->nCols; c++)
+    {
+        write_csv_field(fptr, table->columns[c]);
+        if (c + 1 < table->nCols) fputc(',', fptr);
+    }
+    fputc('\n', fptr);
+
+    // linhas
+    for (int r = 0; r < table->nRows; r++)
+    {
+        for (int c = 0; c < table->nCols; c++)
+        {
+            write_csv_field(fptr, table->rows[r][c]);
+            if (c + 1 < table->nCols) fputc(',', fptr);
+        }
+        fputc('\n', fptr);
+    }
+
+    fclose(fptr);
+}
+
+
+
+/*
+//COM CSV_WRITE
+
+void table_save_csv(const struct table *table, const char *filename)
+{
+    char fileLocation[256] = "generatedFiles/";
+    strncat(fileLocation, filename, sizeof(fileLocation) - strlen(fileLocation) - 1);
+    FILE *fptr = fopen(fileLocation, "w");
+    if (!fptr) return;
+
+    char buffer[1024]; // Buffer para armazenar o campo formatado
+
+    // cabeçalho
+    for (int c = 0; c < table->nCols; c++)
+    {
+        const char *fld = table->columns[c] ? table->columns[c] : "";
+        size_t written = csv_write(buffer, sizeof(buffer), fld, strlen(fld));
+        fwrite(buffer, 1, written, fptr);
+        if (c < table->nCols - 1) fputc(',', fptr);
+    }
+    fputc('\n', fptr);
+
+    //linhas
+    for (int r = 0; r < table->nRows; r++)
+    {
+        for (int c = 0; c < table->nCols; c++)
+        {
+            const char *fld = table->rows[r][c] ? table->rows[r][c] : "";
+            size_t written = csv_write(buffer, sizeof(buffer), fld, strlen(fld));
+            fwrite(buffer, 1, written, fptr);
+            if (c < table->nCols - 1) fputc(',', fptr);
+        }
+        fputc('\n', fptr);
+    }
+
+    fclose(fptr);
+}*/
+
+
+
+
+
 
 struct table *table_filter(const struct table *table, bool (*predicate)(const void *row, const void *context), const void *context)
 {
@@ -215,3 +325,16 @@ bool price_lower_than_euro(const void *row, const void *context)
 
     return price < limit;
 }
+
+
+bool number_lower_than_given(const void *row, const void *context)
+{
+    char **linha = (char **)row;
+    int limit = *(int *)context;
+
+    int number = atoi(linha[0]);
+
+    return number < limit;
+}
+
+
