@@ -5,11 +5,11 @@
 #include "table.h"
 #include "comandos.h"
 
-int getcommand(char input[], char *commandargs[], size_t max_size)
+void prepareArgs(char input[], char *commandargs[], size_t max_size)
 {
     if (fgets(input, 100, stdin) == NULL)
     {
-        return 0;
+        return;
     }
     input[strcspn(input, "\n")] = '\0';
     char *args = strtok(input, " ");
@@ -19,7 +19,7 @@ int getcommand(char input[], char *commandargs[], size_t max_size)
         commandargs[i++] = args;
         args = strtok(NULL, " ");
     }
-    return i;
+    commandargs[i] = NULL;
 }
 
 void execComand(char *commandargs[])
@@ -63,7 +63,7 @@ int main()
     while (true)
     {
         printf("$ ");
-        getcommand(input, commandargs, max_size);
+        prepareArgs(input, commandargs, max_size);
         execComand(commandargs);
     }
 }

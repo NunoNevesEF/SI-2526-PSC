@@ -7,11 +7,11 @@
 extern Command commands[];
 extern size_t n_commands;
 
-int getcommand(char input[], char *commandargs[], size_t max_size)
+void prepareArgs(char input[], char *commandargs[], size_t max_size)
 {
     if (fgets(input, 100, stdin) == NULL)
     {
-        return 0;
+        return;
     }
     input[strcspn(input, "\n")] = '\0';
     char *args = strtok(input, " ");
@@ -22,7 +22,6 @@ int getcommand(char input[], char *commandargs[], size_t max_size)
         args = strtok(NULL, " ");
     }
     commandargs[i] = NULL;
-    return (int)i;
 }
 
 void execComand(char *commandargs[], Command *commands, size_t command_count)
@@ -63,7 +62,7 @@ int main()
     while (true)
     {
         printf("$ ");
-        getcommand(input, commandargs, max_size);
+        prepareArgs(input, commandargs, max_size);
         execComand(commandargs, commands, n_commands);
     }
     return 0;
