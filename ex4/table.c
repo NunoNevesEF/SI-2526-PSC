@@ -68,6 +68,14 @@ struct table *table_load_csv(const char *filename)
     char buf[1024];
     size_t n;
 
+    if (fp == NULL)
+    {
+        printf("Such file does not exist, please try again...\n");
+        free(current_table);
+        current_table = NULL;
+        return NULL;
+    }
+
     while ((n = fread(buf, 1, sizeof(buf), fp)) > 0)
     {
         if (csv_parse(&p, buf, n, on_field, on_row, NULL) != n)
