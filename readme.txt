@@ -19,9 +19,6 @@ show A1:E6
 command libfile.so handle_remove_first
 command libfile.so test
 
-
-
-
 ----------		TodoList		----------
 
 CODE_REVIEW UNTIL 22/12 :
