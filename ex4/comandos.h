@@ -1,13 +1,22 @@
 #ifndef COMANDOS_H
 #define COMANDOS_H
 
-typedef void (*command_handler_t)(char *args[]);
+#include <stddef.h>
+#include "table.h"
 
-struct command
-{
-    const char *name;
-    command_handler_t handler;
-};
+
+typedef struct command {
+    const char *command_name;
+    void (*execute)(char *args[]);
+    const char *lib_name;
+
+} Command;
+
+extern Command commands[20];
+extern size_t n_commands;
+
+void register_command(Command *commands, size_t *command_count, const char *name, void (*execute)(char *[]), const char *lib_name);
+
 
 void handle_help();
 void handle_exit();

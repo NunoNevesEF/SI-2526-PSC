@@ -11,12 +11,21 @@ make
 ./ex1_filter caminho-anterior/SI-2526-PSC/files/frutas.csv filter_table_testing
 ./ex1_loadAndSave caminho-anterior/SI-2526-PSC/files/frutas.csv load_and_save_testing
 
+ gcc -shared -fPIC -o libfile.so libfile.c
+
+load frutas.csv
+show A1:E6
+
+command libfile.so handle_remove_first
+command libfile.so test
+
+
+
 
 ----------		TodoList		----------
 
 CODE_REVIEW UNTIL 22/12 :
 
-- Fix the main.c [execComand] function in order to search in the commandArray, remove the if's
 - Fix commandos.c [cleanTable] function in order to sucessfully clean memory allocated 
 - Check table_save_csv, currente implementation is using fputc (using the csv lib with write_csv would be BiS)
 - Check ways to optimize and simplify code, specially in table.c due to libcsv functions
@@ -24,7 +33,7 @@ CODE_REVIEW UNTIL 22/12 :
 
 ----------		DueDate 		----------
 
-Data limite de entrega: 22 de dezembro de 2025
+Data limite de entrega: 22 de dezembro de 2025 23:59h
 
 ----------      Links     ----------
 
@@ -35,5 +44,5 @@ https://www.dropbox.com/scl/fo/4uk88ebbbrujaacdg7xuf/ABDH8n02Jcbc4IQWMABFZgU?rlk
 ----------		Developers 		----------
 
 - 
--
+- André Esteves nº48321
 - Nuno Neves nº48308

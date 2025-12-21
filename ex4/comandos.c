@@ -4,17 +4,15 @@
 #include "comandos.h"
 #include "table.h"
 #include <dlfcn.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dlfcn.h>
 
-struct command commands[] = {
-    {"help", handle_help},
-    {"exit", handle_exit},
-    {"load", handle_load},
-    {"save", handle_save},
-    {"show", handle_show},
-    {"filter", handle_filter},
-    {"command", common_handler}};
 
-const int n_commands = sizeof(commands) / sizeof(commands[0]);
+Command commands[20];
+size_t n_commands = 0;
+
 
 // FIX THIS!! Not enough
 void cleanTable(struct table *t)
@@ -24,16 +22,13 @@ void cleanTable(struct table *t)
     free(t);
 }
 
-/**
- * Implementation of initial commands with the start of the application.
- */
 
 void handle_help()
 {
     printf("The commands avaliable are the following ->\n");
     for (int i = 0; i < n_commands; i++)
     {
-        printf(" > %s\n", commands[i].name);
+        printf(" > %s\n", commands[i].command_name);
     }
 }
 
@@ -106,31 +101,61 @@ void handle_filter(char *args[])
     current_table = new_table;
 }
 
+
+
+
+
+Command *find_command(const char *name)
+{
+    if (!name) return NULL;
+    for (size_t i = 0; i < n_commands; ++i) {
+        if (commands[i].command_name && strcmp(commands[i].command_name, name) == 0)
+            return &commands[i];
+    }
+    return NULL;
+}
+
+
+
 void common_handler(char *commandargs[])
 {
-    if (commandargs[1] == NULL || commandargs[2] == NULL)
-    {
-        printf("Wrong format, please try again: command <libfile.so> <function>\n");
-        return;
+
+    Command *cmd = find_command(commandargs[0]);
+    const char *funcname = cmd->command_name;
+    const char *libname = cmd->lib_name;
+
+    void *handle = dlopen(libname, RTLD_NOW | RTLD_LOCAL);
+    if (!handle) {
+        char altpath[4096];
+        snprintf(altpath, sizeof(altpath), "./%s", libname);
+        handle = dlopen(altpath, RTLD_NOW | RTLD_LOCAL);
     }
 
-    void *handle = dlopen(commandargs[1], RTLD_LAZY);
-    if (!handle)
-    {
+    if (!handle) {
         fprintf(stderr, "dlopen error: %s\n", dlerror());
         return;
     }
 
-    void (*f)(char *args[]);
-    f = (void (*)(char *[]))dlsym(handle, commandargs[2]);
+    dlerror();
 
-    if (!f)
-    {
-        fprintf(stderr, "dlsym error: %s\n", dlerror());
+    typedef void (*cmd_fn_t)(char **);
+    cmd_fn_t f = (cmd_fn_t)dlsym(handle, funcname);
+    char *err = dlerror();
+    if (err) {
+        fprintf(stderr, "dlsym error: %s\n", err);
         dlclose(handle);
         return;
     }
 
+
     f(NULL);
     dlclose(handle);
 }
+
+
+
+
+
+
+
+

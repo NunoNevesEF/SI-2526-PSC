@@ -5,6 +5,9 @@
 #include "table.h"
 #include "comandos.h"
 
+extern Command commands[];
+extern size_t n_commands;
+
 int getcommand(char input[], char *commandargs[], size_t max_size)
 {
     if (fgets(input, 100, stdin) == NULL)
@@ -19,55 +22,79 @@ int getcommand(char input[], char *commandargs[], size_t max_size)
         commandargs[i++] = args;
         args = strtok(NULL, " ");
     }
-    return i;
+    return (int)i;
 }
 
-void execComand(char *commandargs[])
-{
-    if (strcmp(commandargs[0], "help") == 0)
-    {
-        handle_help();
+
+void execComand(char *commandargs[], Command *commands, size_t command_count) {
+    if (commandargs == NULL || commandargs[0] == NULL) {
+        printf("No command provided.\n");
+        return;
     }
-    else if (strcmp(commandargs[0], "exit") == 0)
-    {
-        handle_exit(current_table);
+
+    for (size_t i = 0; i < command_count; i++) {
+        if (commands[i].command_name == NULL) continue; /* segurança */
+        if (strcmp(commandargs[0], commands[i].command_name) == 0) {
+            if (commands[i].execute == NULL) {
+                printf("Error: Command %s has no execute function.\n", commands[i].command_name);
+                return;
+            }
+            commands[i].execute(commandargs);
+            return;
+        }
     }
-    else if (strcmp(commandargs[0], "load") == 0)
-    {
-        handle_load(commandargs);
+    printf("No such command exists, please try again.\n");
+}
+
+
+void add_command_handler(char *commandargs[]) {
+    if (commandargs[1] == NULL || commandargs[2] == NULL) {
+        printf("Wrong format, please try again: command <libfile.so> <function>\n");
+        return;
     }
-    else if (strcmp(commandargs[0], "save") == 0)
-    {
-        handle_save(commandargs);
+    void (*f1)(char *[]) = common_handler;
+    register_command(commands, &n_commands, commandargs[2], f1,commandargs[1]);
+}
+
+
+
+void initial_commands(Command *commands, size_t *command_count){
+    register_command(commands, command_count, "help", handle_help,"default");
+    register_command(commands, command_count, "exit", handle_exit,"default");
+    register_command(commands, command_count, "load", handle_load,"default");
+    register_command(commands, command_count, "save", handle_save,"default");
+    register_command(commands, command_count, "show", handle_show,"default");
+    register_command(commands, command_count, "filter", handle_filter,"default");
+    register_command(commands, command_count, "command", add_command_handler,"default");
+
+    printf("The commands avaliable are the following ->\n");
+    for (size_t i = 0; i < *command_count; i++) {
+        printf(" > %s\n", commands[i].command_name);
     }
-    else if (strcmp(commandargs[0], "show") == 0)
-    {
-        handle_show(commandargs);
-    }
-    else if (strcmp(commandargs[0], "filter") == 0)
-    {
-        handle_filter(commandargs);
-    }
-    else if (strcmp(commandargs[0], "command") == 0)
-    {
-        common_handler(commandargs);
-    }
-    else
-    {
-        printf("No such command exists, please try again.\n");
-    }
+
+}
+
+void register_command(Command *commands, size_t *command_count, const char *name, void (*execute)(char *args[]),const char *libname) {
+        commands[*command_count].command_name = strdup(name);
+        commands[*command_count].execute = execute;
+        commands[*command_count].lib_name = strdup(libname);
+        (*command_count)++;
 }
 
 int main()
 {
     printf("Prog Starting...\n");
     char input[100];
-    size_t max_size = 5;
+    const size_t max_size = 5;
     char *commandargs[max_size];
+
+    initial_commands(commands, &n_commands);
+
     while (true)
     {
         printf("$ ");
-        getcommand(input, commandargs, max_size);
-        execComand(commandargs);
+        int argc = getcommand(input, commandargs, max_size);
+        execComand(commandargs, commands, n_commands);
     }
+    return 0;
 }

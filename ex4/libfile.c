@@ -18,3 +18,7 @@ void handle_remove_first(char *args[])
 
     printf("First row removed\n");
 }
+
+void test() {
+    printf("Test\n");
+}
