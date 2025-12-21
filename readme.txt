@@ -19,17 +19,27 @@ show A1:E6
 command libfile.so handle_remove_first
 command libfile.so test
 
-
-
-
 ----------		TodoList		----------
 
 CODE_REVIEW UNTIL 22/12 :
 
-- Fix commandos.c [cleanTable] function in order to sucessfully clean memory allocated 
-- Check table_save_csv, currente implementation is using fputc (using the csv lib with write_csv would be BiS)
-- Check ways to optimize and simplify code, specially in table.c due to libcsv functions
-- Check if it is required to pass parameters into the libfile.so ( would be easy to achieve this if the user pass the row they wanna delete in the command )
+- [High] Fix table_save_csv, current implementation is using fputc (using the csv lib with write_csv would be BiS)
+- [Low] Add protection to table.c show_sub_table, (iterate over the current stored table to check if the user input is valid, before iterating over the table)
+
+int initialCol = initialColumn - 'A';
+    int lastCol = lastColumn - 'A';
+    int iRow = initialRow - '1';
+    int lRow = lastRow - '1';
+
+    // Add protection here
+
+    for (int c = initialCol; c <= lastCol; c++)
+    {
+        printf("%s\t", current_table->columns[c]);
+    }
+    printf("\n");
+
+- [Low] Try to pass parameters into the libfile.so ( would be easy to achieve this if the user pass the row they wanna delete in the command ). This is an extra, from the given functionalities this should not be required.
 
 ----------		DueDate 		----------
 
