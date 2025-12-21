@@ -21,7 +21,7 @@ command libfile.so test
 
 ----------		TodoList		----------
 
-CODE_REVIEW UNTIL 22/12 :
+CODE_REVIEW UNTIL PRESENTATION DATE :
 
 - [High] Fix table_save_csv, current implementation is using fputc (using the csv lib with write_csv would be BiS)
 - [Low] Add protection to table.c show_sub_table, (iterate over the current stored table to check if the user input is valid, before iterating over the table)
