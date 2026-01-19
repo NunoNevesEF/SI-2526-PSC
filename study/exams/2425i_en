@@ -1,0 +1,362 @@
+
+/*
+
+    1. [1,5] Programe em linguagem C a função bool check_power2(unsigned int value); que verifica se o valor
+    recebido no parâmetro value é uma potência de dois.
+
+*/
+
+bool check_power2(unsigned int value)
+{
+    int bits = 0;
+    while (value > 0)
+    {
+        if (value & 1)
+            bits++;
+        value >>= 1;
+    }
+    return bits == 1;
+}
+
+/*
+
+    2. [2] Escreva em linguagem C, a função int date_get_year(const char *date); que retorna em valor
+    numérico, o ano inscrito na data recebida em parâmetro, na forma de string. As datas recebidas em parâmetro
+    estão sempre formatadas como no seguinte exemplo: ”segunda‐feira, 16‐09‐2024, 12:45:23”.
+
+*/
+
+int date_get_year(const char *date)
+{
+    int i = 0;
+    int year = 0;
+
+    // procurar a primeira vírgula
+    while (date[i] != ',')
+    {
+        i++;
+    }
+
+    // saltar ", DD-MM-"
+    i += 8;
+
+    year = (date[i] - '0') * 1000 +
+           (date[i + 1] - '0') * 100 +
+           (date[i + 2] - '0') * 10 +
+           (date[i + 3] - '0');
+
+    return year;
+}
+
+/*
+
+3. [4,5] Considere a função get_val_ptr, cuja definição em linguagem C se apresenta abaixo.
+struct data { short flags:6; short length:10; short *vals; };
+struct info { double ref; struct data **data; int valid; };
+short *get_val_ptr(struct info items[],
+size_t item_idx, size_t data_idx, size_t val_idx, short mask)
+{
+return items[item_idx].data[data_idx]‐>flags & mask
+? &items[item_idx].data[data_idx]‐>vals[val_idx]
+: NULL;
+}
+a. [2] Traduza a função get_val_ptr para linguagem assembly x86-64.
+
+*/
+
+/*
+// TAMANHOS
+// data = 6bits + 10bits + 64 bits = 2 bytes + 8 bytes = 10 bytes alinhado para 16 bytes
+// info = 8 bytes + 8 bytes + 4 bytes = 24 bytes
+// PARAMETROS
+//  %rdi = items[]
+//  %rsi = item_idx
+//  %rdx = data_idx
+//  %rcx = val_idx
+//  %r8 = mask
+//
+
+get_val_ptr:
+    push %r12
+    push %r13
+    movq (%rdi, %rsi, 8), %r12  # item[item_idx]
+    movq (%r12, $8), %r12       # item[item_idx].data
+    movq (%r12, %rdx, 8), %r12  # item[item_idx].data[data_idx]
+    movzwl (%r12), %r13   # move 16 bits de offset 0 (flags+length) para r13
+    and $0x3F, %r13       # máscara 6 bits para pegar apenas flags
+
+    and  %r13w, %r8w        # flags & mask
+    bne return_null
+    movq (%r12, $2),%r13        # items[item_idx].data[data_idx]‐>vals
+    movq (%r13, %rcx, $8), %r13 # items[item_idx].data[data_idx]‐>vals[val_idx]
+    leaq (%r13), %rax           # &items[item_idx].data[data_idx]‐>vals[val_idx]
+    jmp end
+
+
+return_null:
+    movq $0, %rax
+
+end:
+    pop %r13
+    pop %r12
+    ret
+*/
+
+/*
+
+b. [2,5] Escreva em linguagem C, um trecho de programa de teste da função get_val_ptr, que defina uma
+estrutura de dados estática e invoque a função de modo que retorne um ponteiro diferente de NULL.
+
+*/
+
+int main()
+{
+    struct data d0;
+    short vals_array[3] = {10, 20, 30};
+
+    d0.flags = 1;
+    d0.length = 3;
+    d0.vals = vals_array;
+
+    struct data *data_ptrs[1];
+    data_ptrs[0] = &d0;
+
+    struct info items[1];
+    items[0].ref = 3.14;
+    items[0].data = data_ptrs;
+    items[0].valid = 1;
+
+    short mask = 1;
+    short *result = get_val_ptr(items, 0, 0, 1, mask);
+}
+
+/*
+
+    4. [3] Implemente a função list_insert_sorted em assembly x86-64.
+
+    struct list_node {
+        struct list_node *next, *prev;
+        void *data;
+    };
+
+    bool list_insert_rear(struct list_node *node, void *data);
+
+    bool list_insert_sorted(struct list_node *list, void *data,int (*compare)(const void*, const void*))
+    {
+        struct list_node *node;
+        for (node = list‐>next; node != list && compare(node‐>data, data) < 0; node = node‐>next);
+        return list_insert_rear(node, data);
+    }
+
+*/
+
+/*
+        .text
+        .global list_insert_sorted
+
+    //      PARAMETROS
+    //  %rdi -> *list
+    //  %rsi -> *data
+    //  %rdx -> int (*compare)(const void*, const void*) pointer para função
+
+    list_insert_sorted:
+        push %r12
+        movq %rdi, %r12     # %r12 = node
+        movq (%r12, $0),%r12# %r12 = list->next
+
+    for_loop:
+        cmp %r12, %rdi      # node != list
+        bne return
+        push %r10
+        movq %rdi, %r10     # temporariamente guardar a lista
+        movq (%r12,$16), %rdi   # node‐>data
+        call *%rdx          # int (*compare)(const void*, const void*)????
+        pop %r10
+        movq %r10, %rdi     # devolta para o primeiro param
+        cmp %rax, $0        # compare(node‐>data, data) < 0
+        bge return
+        movq (%r12,$0), $r12
+        b for_loop
+
+    return:
+        movq %r12, %rdi
+        call list_insert_rear
+
+    end:
+        pop %r12
+        ret
+*/
+
+// 5. [3] Considere o seguinte conteúdo dos ficheiros fonte m1.c e m2.c.
+
+/* m1.c */
+extern int c;
+int a = 33;
+int *b = &c;
+int d(int);
+static int e(int f)
+{
+    int e;
+    return f + e;
+}
+int main(void)
+{
+    return e(a) + d(*b);
+}
+/* m2.c */
+long *b = (void *)0;
+#define MAX 999
+static long a;
+static int e(int f)
+{
+    return MAX ‐ f;
+}
+long c(int a)
+{
+    static int g = 0;
+    return g = a + *b;
+}
+/*
+
+    a. [1,5] Indique o conteúdo das tabelas de símbolos dos ficheiros objecto relocáveis, resultantes da compilação
+    de m1.c e m2.c. Para cada símbolo, indique o nome, a secção e o respectivo âmbito (local ou global). Pode
+    usar a convenção nm.
+
+    m1.c
+        NOME    |   SECÇÃO  |   ÂMBITO
+        a       |   global  |   .data
+        b       |   global  |   .bss
+        c       |   global  |     U
+        d       |   global  |     U
+        e       |   local   |   .text
+        main    |   global  |   .text
+
+    m2.c
+        NOME    |   SECÇÃO  |   ÂMBITO
+        b       |   global  |   .data
+        a       |   local   |   .bss
+        e       |   local   |   .text
+        c       |   global  |   .text
+
+    b. [1] Indique justificando os erros emitidos pelo linker ao ligar os ficheiros m1.o e m2.o.
+
+    Função d não definida e o tipo da variável c não é compativel e deve gerar erro
+
+    c. [0,5] Sendo g uma variável local na função c, qual a necessidade de geração de símbolo associado a esta
+    variável?
+
+    Penso que seja porque vai ficar guardada em memória ao contrário de casos como #DEFINE MAX que não ocupam
+    espaço e o compilador apenas substitui quando a app corre
+
+*/
+
+/*
+
+    6. [1] Considere uma cache de 16 MByte de capacidade, com organização set-associative de 16 vias e 8192 sets.
+    Quantas posições de um array de valores do tipo struct { long, int }; preenchem completamente uma linha
+    desta cache? Justifique.
+
+    Line size = Capacidade total / (Número de sets × Vias por set)
+
+    Capacidade total = 16 MB = 2^24 bytes
+    Número de sets = 8192 = 2^13
+    Vias por set = 16 = 2^4
+
+    Portanto:
+
+    Line size = 2^24 / (2^13 * 2^4)
+            = 2^24 / 2^17
+            = 2^7
+            = 128 bytes
+
+    Tamanho de struct { long, int } = 8 + 4 + 4 (padding) = 16 bytes
+
+    Structs por linha = Line size / Tamanho de struct
+                    = 128 / 16
+                    = 8 structs
+
+*/
+
+/*
+
+    7. [5] Considere o tipo struct book para representação de informação sobre livros. O título é registado no campo
+    title como um ponteiro para string C e o género é registado no campo style. A struct list_node serve como
+    elemento de formação de listas ligadas não intrusivas.
+
+*/
+
+struct book
+{
+    const char *title;
+    enum
+    {
+        LITERATURE,
+        TECHNICAL
+    } style;
+};
+
+struct list_node
+{
+    struct list_node *next;
+    void *data;
+};
+
+/*
+
+    a. [3] A função book_filter recebe uma lista de objetos struct book, organizada em lista ligada não
+    intrusiva, formada por nós do tipo struct list_node, sem sentinela. Retorna como valor, um ponteiro para
+    um array de ponteiros para cópias dos objetos struct book recebidos na lista, que satisfaçam um critério. A
+    verificação do critério é programada na função cujo ponteiro é passado como argumento no parâmetro
+    predicate. Essa função retorna true se o objeto que lhe é passado como argumento satisfaz o critério ou
+    false no caso contrário. A função book_filter devolve, através do parâmetro book_array_size, o número
+    de objetos que satisfazem o critério. Implemente esta função em linguagem C.
+
+*/
+
+struct book **book_filter(struct list_node *list, size_t *book_array_size,
+                          bool (*predicate)(struct book *))
+{
+    size_t count = 0;
+    struct list_node *current = list;
+    while (current)
+    {
+        if (predicate((struct book *)current->data))
+            count++;
+        current = current->next;
+    }
+
+    *book_array_size = count;
+
+    struct book **result = malloc(count * sizeof(struct book *));
+    current = list;
+    size_t i = 0;
+    while (current)
+    {
+        struct book *b = (struct book *)current->data;
+        if (predicate(b))
+            result[i++] = b;
+        current = current->next;
+    }
+
+    return result;
+}
+
+/*
+
+    b. [2] Implemente a função book_list_free que liberta todos os recursos de memória alocados numa lista
+    ligada não intrusiva, formada por nós do tipo struct list_node, sem sentinela, contendo objetos do tipo
+    struct book.
+
+*/
+
+void book_list_free(struct list_node *list)
+{
+    struct list_node *current = list;
+    while (current)
+    {
+        struct list_node *next = current->next;
+        free(current->data);
+        free(current);
+        current = next;
+    }
+}

@@ -7,57 +7,50 @@
 1024   512   256   128   64   32  16  8   4   2   1
 */
 
-typedef struct list_node
+/*
+
+b. [2,5] Escreva em linguagem C, um trecho de programa de teste da função get_val_ptr, que defina uma
+estrutura de dados estática e invoque a função de modo que retorne um ponteiro diferente de NULL.
+
+*/
+
+struct data
 {
-    struct list_node *link;
-    void *data;
-} Lnode;
-
-Lnode *list_copy_deep(Lnode *list, void *(*copy)(void *))
+    short flags : 6;
+    short length : 10;
+    short *vals;
+};
+struct info
 {
-    Lnode *new_head = malloc(sizeof(Lnode));
-    new_head->data = copy(list->data);
-    new_head->link = NULL;
-
-    Lnode *current_new = new_head;
-    Lnode *current_old = list->link;
-
-    while (current_old != NULL)
-    {
-        Lnode *new_node = malloc(sizeof(Lnode));
-        new_node->data = copy(current_old->data);
-        new_node->link = NULL;
-
-        current_new->link = new_node;
-        current_new = new_node;
-        current_old = current_old->link;
-    }
-
-    return new_head;
-}
-
-void list_free_deep(Lnode *list, void (*pfree)(void *))
+    double ref;
+    struct data **data;
+    int valid;
+};
+short *get_val_ptr(struct info items[],
+                   size_t item_idx, size_t data_idx, size_t val_idx, short mask)
 {
-    Lnode *current = list;
-    while (current != NULL)
-    {
-        Lnode next = current->link;
-        pfree(current->data);
-        free(current);
-        current = next;
-    }
+    return items[item_idx].data[data_idx]‐> flags & mask
+               ? &items[item_idx].data[data_idx]‐> vals[val_idx]
+               : NULL;
 }
 
 int main()
 {
+    struct data d0;
+    short vals_array[3] = {10, 20, 30};
 
-    // bool flag = false;
-    // int result = round_power2(13, &flag);
-    // printf("Result = %i \n", result);  // int
+    d0.flags = 1;
+    d0.length = 3;
+    d0.vals = vals_array;
 
-    // char palindrome[] = "roma e amor";
-    // bool result = is_palindrome(palindrome);
-    // printf("Result = %s \n", result ? "true" : "false");
+    struct data *data_ptrs[1];
+    data_ptrs[0] = &d0;
 
-    return 0;
+    struct info items[1];
+    items[0].ref = 3.14;
+    items[0].data = data_ptrs;
+    items[0].valid = 1;
+
+    short mask = 1;
+    short *result = get_val_ptr(items, 0, 0, 1, mask);
 }
