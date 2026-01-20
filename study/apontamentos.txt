@@ -1,0 +1,93 @@
+			
+			/* APONTAMENTOS C*/
+
+& → "para obter o endereço" (valor → ponteiro)
+* → "obtém o valor apontado" (ponteiro → valor)
+
+Passar de valor para bits
+
+for (int i = 0; i < 32; i++)
+{
+	if ((value >> i) & 1)
+	{
+		highestBitIdx = i;
+	}
+}
+
+.text (código)
+	Todas as funções (código executável)
+	Read-only
+	Não ocupa espaço em disco se não tem instruções
+	
+.data (dados inicializados)
+	Variáveis globais/static inicializadas
+	Tem valor atribuído no código
+	Exemplos: long a = 100L; char b = 0;
+	
+.bss (dados não inicializados)
+	Variáveis globais/static NÃO inicializadas
+	Não tem valor atribuído (ou atribuído a 0)
+	Ocupa pouco espaço em disco (só registra tamanho)
+	Exemplos: static int f; (sem inicialização)
+	
+Stack (variáveis locais)
+	Variáveis locais de funções
+	Alocadas automaticamente
+	Libertadas quando a função termina
+	
+Heap (alocação dinâmica)
+	malloc(), calloc(), new
+	O programador aloca e liberta
+	Pode crescer durante a execução
+
+	int strcmp(const char *s1, const char *s2);	// Compara duas Strings
+	
+	char *strcpy(char *dest, const char *src);	// Copia a String
+	
+	size_t strlen(const char *s);				// Tamanho de uma String
+		
+	void *malloc(size_t size);					// Alocação de memória
+	
+	void free(void *ptr);						// Libertação de memória
+	
+	void assert(int expression);				// Caso de testes
+	
+	
+
+
+			/* APONTAMENTOS ASSEMBLY*/
+
+	movq    (%r12, %rdx,8), %r13    # %r13 = data[data_idx]
+    leaq    2(%r13),        %r13    # %r13 = data[data_idx]->vals
+
+Aceder ao -> vals sendo isto num array
+
+	movq    (%rdi,%rsi,8),  %r12    # %r12 = items[item_idx]
+	movq    (%r12,8),       %r12    # %r12 = items[item_idx]->data
+
+
+
+movq    (%rbx), %rax    # %rax = 42 (vai buscar à memória)
+leaq    (%rbx), %rax    # %rax = 0x1000 (apenas o endereço)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
