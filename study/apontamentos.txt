@@ -40,6 +40,10 @@ Heap (alocação dinâmica)
 	O programador aloca e liberta
 	Pode crescer durante a execução
 
+    void *memcpy(void *dest, const void *src, size_t n);
+
+    void *memmove(void *dest, const void *src, size_t n);
+
 	int strcmp(const char *s1, const char *s2);	// Compara duas Strings
 	
 	char *strcpy(char *dest, const char *src);	// Copia a String
