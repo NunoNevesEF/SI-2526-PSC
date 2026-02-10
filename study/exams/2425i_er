@@ -1,0 +1,387 @@
+/**
+    1. [1,5] Programe em linguagem C a função round_power2 que arredonda o valor recebido no parâmetro value
+    para a potência de dois superior mais próxima. No caso do resultado ultrapassar a capacidade de codificação de
+    um unsigned int, deve ser assinalado overflow através do parâmetro overflow;
+*/
+
+unsigned int round_power2(unsigned int value, bool *overflow)
+{
+    int highestBitIdx = 0;
+    for (int i = 0; i < 32; i++)
+    {
+        if ((value >> i) & 1)
+        {
+            highestBitIdx = i;
+        }
+    }
+
+    if (highestBitIdx == 31)
+    {
+        *overflow = true;
+    }
+
+    return 1 << (highestBitIdx + 1);
+}
+
+/**
+    2. [2] Escreva em linguagem C, a função is_palindrome que verifica se a string str é um palíndromo. Na
+    implementação desta função não deve distinguir letras maiúsculas de letras minúsculas e não deve recorrer a
+    qualquer função da biblioteca standard do C. Um palíndromo corresponde a uma palavra ou sequência de
+    palavras que se lêem de igual forma da esquerda para a direita ou da direita para a esquerda. Por exemplo, “Ana”
+    e “Roma e amor” são palíndromos. A função retorna true se o argumento corresponder a um palíndromo, retorna
+    false, caso contrário.
+
+    Iterar pelo array primeiro para saber o número de chars
+*/
+
+bool is_palindrome(const char *str)
+{
+
+    int size = 0;
+    for (int i = 0; str[i] != '\0'; i++)
+    {
+        size++;
+    }
+
+    for (int j = 0; j < size / 2; j++)
+    {
+        if (str[j] != str[size - j - 1])
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// a. [2] Traduza a função get_val para linguagem assembly x86-64.
+/*
+    .text
+    .global get_val
+
+// Parametros
+// %rdi -> items
+// %rsi -> item_idx
+// %rdx -> data_idx
+// %rcx -> val_idx
+// Variaveis
+// %r12 -> items[item_idx]
+// %r13 -> items
+
+get_val:
+    push    %r12
+    push    %r13
+    movq    (%rdi,%rsi,8),  %r12    # %r12 = items[item_idx]
+    movq    (%r12,8),       %r12    # %r12 = items[item_idx]->data
+    movq    (%r12, %rdx,8), %r13    # %r13 = data[data_idx]
+    leaq    2(%r13),        %r13    # %r13 = data[data_idx]->vals
+    movw    (%r13,%rcx,2),  %ax     # %rax = vals[val_idx]
+
+end:
+    pop     %r13
+    pop     %r12
+    ret
+
+    .section    .note.GNU-stack
+*/
+
+/*
+    b. [2] Escreva um trecho de programa de teste da função get_val em linguagem C, que defina uma estrutura de
+    dados estática e invoque a função de modo que esta retorne o valor 27.
+*/
+
+int main()
+{
+    // Alocar struct data com um short (27)
+    struct data *d = malloc(sizeof(struct data) + sizeof(short));
+    d->vals[0] = 27;
+
+    // Criar struct info
+    struct info i;
+    i.ref = 0.0;
+    i.data = &d; // Ponteiro para ponteiro
+    i.valid = 1;
+
+    // Array de struct info*
+    struct info *items[] = {&i};
+
+    // Chamar get_val
+    short result = get_val(items, 0, 0, 0);
+    printf("Result: %hd\n", result); // Deve imprimir 27
+
+    free(d);
+    return 0;
+}
+
+/*
+
+    4. [3] Implemente a função find_word_bigger em assembly x86-64.
+    void get_word(char **begin, char **end);
+    size_t find_word_bigger(char *string, char **word)
+    {
+        char *begin = string, *end;
+        size_t bigger = 0;
+        while (true) {
+            get_word(&begin, &end);
+            if (begin == end)
+                break;
+            if (end ‐ begin > bigger) {
+                bigger = end ‐ begin;
+                *word = begin;
+            }
+            begin = end;
+        }
+        return bigger;
+    }
+
+*/
+
+/*
+find_word_bigger:
+    push    %r12
+    movq    $0,     %rdx    # bigger = 0;
+    movq    %rdi,   %rcx    # begin = string
+    movq    %rdi,   %r8     # end = string
+
+while:
+    push    %rcx            # Guarda begin na stack
+    push    %r8             # Guarda end na stack
+    leaq    8(%rsp), %rdi   # Endereço de begin
+    leaq    (%rsp),  %rsi   # Endereço de end
+    call    get_word
+    pop     %r8             # Recupera end
+    pop     %rcx            # Recupera begin
+    cmp     %rcx,   %r8     # if (begin == end)
+    je      end
+    movq    %r8,    %r12    # r12 = end
+    subq    %rcx,   %r12    # r12 = end - begin
+    cmp     %r12,   %rdx    # if (end - begin > bigger)
+    jbe     while_end
+    movq    %r12,   %rdx    # bigger = end - begin
+    movq    %rcx,   (%rsi)  # *word = begin
+
+while_end:
+    movq    %r8,    %rcx    # begin = end
+    jmp     while
+
+end:
+    pop     %r12
+    ret
+
+    .section    .note.GNU-stack
+*/
+
+// 5. [2, 5] Considere o conteúdo dos ficheiros fonte m1.c e m2.c.
+
+/* m1.c */
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(*a))
+long a = 100L;
+char b = 0;
+static short c[10] = {100};
+int d()
+{
+    return a + ARRAY_SIZE(c);
+}
+extern long e(int);
+extern int f;
+int main()
+{
+    return d() + e(f);
+}
+/* m2.c */
+#define DIM 100
+static long e(int x);
+static short a(int b)
+{
+    return b + DIM;
+}
+short b(int c)
+{
+    static int f;
+    return (short)(e(c) + f++);
+}
+static long e(int x)
+{
+    return a(x);
+}
+
+/*
+
+    a. [1,5] Indique o conteúdo das tabelas de símbolos dos ficheiros objecto relocáveis, resultantes da compilação
+    de m1.c e m2.c. Para cada símbolo, indique o nome, a secção e o respectivo âmbito (local ou global). Pode
+    usar a convenção nm.
+
+*/
+
+/*
+    m1.c
+            SCOPE       |       LOCALIZAçÂO
+    a ->    global      |       .data
+    b ->    global      |       .data
+    c ->    local       |       .data
+    d ->    global      |       .text
+    e ->    global      |       .bss
+    f ->    global      |       .bss
+    main -> global      |       .text
+
+    m2.c
+
+    e ->    local       |       .text
+    a ->    local       |       .text
+    b ->    global      |       .text
+    f ->    local       |       .bss
+*/
+
+/*
+
+    b. [1] Indique justificando os erros emitidos pelo linker ao ligar os ficheiros m1.o e m2.o.
+
+*/
+
+//  AS funções E e F estão definidas como static (locais) e o linker não vai conseguires resolver os simbolos no m1.c
+
+/*
+
+    6. [1] Considere que uma sequência de 4 objetos do tipo struct { int (*cmp)(void *, void *); void
+    *context; };, alinhados no início de uma linha de cache, ocupam uma linha completa de cache. Considere
+    ainda uma arquitetura com endereços de 48 bits e uma cache com organização set-associative de 8 vias e 16384
+    sets (16K sets). Determine o número de bits necessários para armazenar uma tag. Justifique.
+
+*/
+
+struct
+{
+    int (*cmp)(void *, void *);
+    void *context;
+};
+
+/*
+    Endereços totais: 48 bits
+
+    4 structs × 16 bytes = 64 bytes
+    Portanto: cache line = 64 bytes = 2^6 bytes
+
+    Offset (dentro da linha): 6 bits
+    Set index: 14 bits
+    Bits usados: 6 + 14 = 20 bits
+
+    Bits para TAG = 48 - 20 = 28 bits
+*/
+
+/*
+    7. [6] Considere o tipo struct list_node como elemento de formação de lista ligada, não intrusiva, de ligação
+    simples.
+
+*/
+
+typedef struct list_node
+{
+    struct list_node *link;
+    void *data;
+} Lnode;
+
+/*
+
+    a) [1,5] Programe a função list_copy_deep que retorna uma cópia da lista recebida no parâmetro list,
+    incluindo os elementos de dados. A cópia do elemento de dados é realizada pela função de callback cujo
+    ponteiro é recebido no argumento copy.
+    Lnode *list_copy_deep(Lnode *list, void *(*copy)(void *));
+
+*/
+
+Lnode *list_copy_deep(Lnode *list, void *(*copy)(void *))
+{
+    Lnode *new_head = malloc(sizeof(Lnode));
+    new_head->data = copy(list->data);
+    new_head->link = NULL;
+
+    Lnode *current_new = new_head;
+    Lnode *current_old = list->link;
+
+    while (current_old != NULL)
+    {
+        Lnode *new_node = malloc(sizeof(Lnode));
+        new_node->data = copy(current_old->data);
+        new_node->link = NULL;
+
+        current_new->link = new_node;
+        current_new = new_node;
+        current_old = current_old->link;
+    }
+
+    return new_head;
+}
+
+/*
+
+    b) [1,5] Programe a função list_free_deep que elimina a lista recebida no parâmetro list. Os elementos de
+    dados devem ser eliminados através da função de callback cujo ponteiro é recebido no argumento pfree.
+    void list_free_deep(Lnode *list, void (*pfree)(void *));
+
+*/
+
+void list_free_deep(Lnode *list, void (*pfree)(void *))
+{
+    Lnode *current = list;
+    while (current != NULL)
+    {
+        Lnode next = current->link;
+        pfree(current->data);
+        free(current);
+        current = next;
+    }
+}
+
+/*
+    Considere uma sequência de secções de memória representada como uma lista ligada, formada por nós do
+    tipo struct list_node, em que cada nó aponta uma instância de struct section contendo os dados de
+    uma secção. O campo id identifica a secção, o campo address o seu endereço inicial e o campo content
+    aponta para um bloco de memória com o conteúdo binário da secção de dimensão size.
+
+    c) [1,5] Utilizando a função list_copy_deep, programe a função sections_duplicate que devolve uma
+    réplica da sequência de secções recebida como argumento.
+*/
+
+typedef struct section
+{
+    int id;
+    unsigned address;
+    size_t size;
+    char *content;
+} Section;
+
+Lnode *sections_duplicate(Lnode *)
+{
+}
+
+void *section_copy(void *data)
+{
+    Section *s = (Section *)data;
+
+    Section *copy = malloc(sizeof(Section));
+    copy->id = s->id;
+    copy->address = s->address;
+    copy->size = s->size;
+
+    copy->content = malloc(s->size);
+    memcpy(copy->content, s->content, s->size);
+
+    return copy;
+}
+
+Lnode *sections_duplicate(Lnode *sections)
+{
+    return list_copy_deep(sections, section_copy);
+}
+
+void section_free(void *data)
+{
+    Section *s = (Section *)data;
+    free(s->content);
+    free(s);
+}
+
+void sections_destroy(Lnode *sections)
+{
+    list_free_deep(sections, section_free);
+}
